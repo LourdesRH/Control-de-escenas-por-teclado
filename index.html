@@ -1,107 +1,130 @@
 <!DOCTYPE html>
-<html lang="es"> 
-<head>
+<html lang="es">
+<head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>3.5 Control de escenas por teclado</title>
 </head>
 <body>
-    <button id="btnPlay">Play</button>
+    <button id="btnPlay">Play</button> 
     <script type="module">
 
-        import * as THREE from './three.module.js';
-        import {PointerLockControls} from './PointerLockControls.js'
+        import * as THREE from './three.module.js';  //importación de archivo three
+        import {PointerLockControls} from './PointerLockControls.js' //importación del archivo Pointer
 
-        let camera, scene, renderer, pControl
-        let xdir = 0, zdir = 0
-        let tiempoI, tiempoF, vel, delta
+        let camera, scene, renderer, pControl //controles de camara, escena y control
+        let xdir = 0, zdir = 0 //banderas para la direccion de los controles
+        //xdir negativos zdir positivos
+        let tiempoI, tiempoF, vel, delta //formulas matematicas
+        //delta tiempo inicial y final
+        //velocidad inicial 
+        //velocidad final
 
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0xffffff)
-        scene.fog = new THREE.Fog(0xffffff, 0, 500)
+        scene.background = new THREE.Color(0xffffff) // usamos un color de fondo, será blanco
+        scene.fog = new THREE.Fog(0xffffff, 0, 500) //efecto de neblina como si estuvierá alejado
 
-        scene.add(new THREE.GridHelper(10000, 1000))
+        scene.add(new THREE.GridHelper(10000, 1000)) //agregar un plano de referencia 
+       
+        //mesh para indicar nuestra figura geometrica 
         let mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(10,10,10),
-            new THREE.MeshLambertMaterial({color: 0x0000ff})
+            new THREE.BoxGeometry(10,10,10), //nueva geometria y usamos la cajita, de tamaño 10
+            new THREE.MeshLambertMaterial({color: 0x0000ff}) //le indicamos el material y el color
         )
-        mesh.position.z = -50
+        mesh.position.z = -50 //indicamos la posicion en -50 para alejarlo de la pantalla 
         scene.add(mesh)
 
-        scene.add(new THREE.HemisphereLight(0xffffff))
+        scene.add(new THREE.HemisphereLight(0xffffff)) //agregamos una luz a nuestra escena
+        //luz para la cajita, sino, sale negra
         
         camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 1, 1000 );
-        camera.position.y = 10
+        camera.position.y = 10  //posision de la camara, del suelo un poco levantada
 
-        renderer = new THREE.WebGLRenderer({antialias: true});
+
+        //pixeles sin distorcion
+        renderer = new THREE.WebGLRenderer({antialias: true}); //tecnica para la visualizacion
+        //y disminuir la distorcion 
         renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.setPixelRatio(window.devicePixelRatio)
+        renderer.setPixelRatio(window.devicePixelRatio) //recibir el parametro window y pasarle la propiedad
+        //para los pixiles
         document.body.appendChild( renderer.domElement );
 
-        pControl = new PointerLockControls(camera, renderer.domElement)
 
-        document.getElementById('btnPlay').onclick = ()=>{
-            pControl.lock()
+        pControl = new PointerLockControls(camera, renderer.domElement) //recibe la camara y el render
+        //con eso ya creamos el control pero hay que activarlo. Entonces el botón que tenemos arriba
+        //a continuación lo mandamos a llamar por su ID
+
+        document.getElementById('btnPlay').onclick = ()=>{ //lo llamamos y cuando hagamos click se ejecuta
+            pControl.lock() //la función es el pControl y tiene el metodo lock para activación
         }
 
-        document.addEventListener('keydown', (e)=>{
-            switch (e.keyCode) {
-                case 37:
+        //oyente de eventos y se activa cuando oprimamos alguna tecla
+        document.addEventListener('keydown', (e)=>{   
+            switch (e.keyCode) { //valores que representan las teclas de las flechitas
+                case 37: //flechita izquierda
                     xdir = -1
                     break;
-                case 38:
+                case 38: //flechita derecha
                     zdir = 1
                     break;
-                case 39:
+                case 39: //flechita arriba
                     xdir = 1
                     break;
-                case 40:
+                case 40: //flechita abajo
                     zdir = -1
                     break;
             }
         })
 
+        // y usaremos dos veces la misma funcion pero el keyup es para soltar la tecla
         document.addEventListener('keyup', (e)=>{
-            switch (e.keyCode) {
-                case 37:
+            switch (e.keyCode) { //valores que representan las teclas de las flechitas
+                case 37: //flechita izquierda
                     xdir = 0
                     break;
-                case 38:
+                case 38: //flechita derecha
                     zdir = 0
                     break;
-                case 39:
+                case 39: //flechita arriba
                     xdir = 0
                     break;
-                case 40:
+                case 40:  //flechita abajo
                     zdir = 0
                     break;
             }
         })
 
-        tiempoI = Date.now()
-        vel = 50
+        tiempoI = Date.now() //tiempo inicial es igual a la clase now para retornar el valor
+        //en milisegundos
+        vel = 50 //pixeles por segundo
 
-        animate()
+        animate() //lo mandamos a llamar
 
-        function animate() {
+        function animate() {  //creamos la funciona animacion
 
-            requestAnimationFrame( animate );
+            requestAnimationFrame( animate ); //tener efecto de ciclo repetitivo
+            //esto hace el movimiento y poder girar la escena con solo mover el mouse
 
-            if(pControl.isLocked === true){
-                tiempoF = Date.now()
 
-                delta = (tiempoF - tiempoI)/1000
+            //
+            if(pControl.isLocked === true){ //control para activacion, si esta activado funciona
+                tiempoF = Date.now() //el tiempo final es despues de cada ciclo de animacion
 
-                let xDis = xdir * vel * delta
-                let zDis = zdir * vel * delta
+                delta = (tiempoF - tiempoI)/1000 //delta es tiempo final- tiempo inicial y eso sobre 1000
+                //porque esta en milisegundos entonces los pasamos a segundos por la velocidad de la camara
 
+                let xDis = xdir * vel * delta  //formula por movimiento 
+                let zDis = zdir * vel * delta  //formula por movimiento
+
+                //metodo para movernos en direccion derecha izquierda y llamamos el parametro
                 pControl.moveRight(xDis)
+                //metodo para movernos en direccion abajo arriba
                 pControl.moveForward(zDis)
 
-                tiempoI = tiempoF
-            }
+                tiempoI = tiempoF //tiempo inicial es igual al tiempo final
+            }//fin del ciclo
 
-            renderer.render( scene, camera );
+            renderer.render( scene, camera ); //renderizamos la camara y la scena 
         }
 
 
